@@ -1,6 +1,3 @@
-use luxarust_window::windows::{
-    Window, WindowClass, WindowClassRegisterInfo, WindowCreateInfo, WindowException, wnd_proc,
-};
 use windows::{
     Win32::{
         Foundation::{GetLastError, HINSTANCE, HMODULE},
@@ -15,6 +12,10 @@ use windows::{
         },
     },
     core::PCWSTR,
+};
+
+use crate::windows::{
+    Window, WindowClass, WindowClassRegisterInfo, WindowCreateInfo, WindowException, wnd_proc,
 };
 
 #[derive(Debug)]

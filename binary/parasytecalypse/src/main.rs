@@ -1,6 +1,6 @@
-use luxarust::{
-    window::windows::{WindowClassRegisterInfo, WindowCreateFlags, WindowCreateInfo},
-    windows::{Handle, HandleLoadFlags, HandleLoadInfo},
+use luxarust::system::windows::{
+    Handle, HandleLoadFlags, HandleLoadInfo, Message, WindowClassRegisterInfo, WindowCreateFlags,
+    WindowCreateInfo,
 };
 
 fn main() {
@@ -21,6 +21,8 @@ fn main() {
         .set_flags(WindowCreateFlags::OVERLAPPEDWINDOW)
         .set_class(&window_class);
     let window = handle.create_window(&window_info).expect("Failed window");
+    let mut message = Message::new();
+    message.message_blocking();
 
     println!("Hello, world!");
 }

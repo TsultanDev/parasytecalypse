@@ -1,4 +1,2 @@
-pub use luxarust_window as window;
-
-pub mod linux;
-pub mod windows;
+pub use luxarust_graphics as graphics;
+pub use luxarust_system as system;

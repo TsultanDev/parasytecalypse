@@ -1,4 +1,4 @@
 
 [workspace]
-members = ["binary/parasytecalypse","crates/luxarust", "crates/luxarust_window"]
+members = ["binary/parasytecalypse","crates/luxarust", "crates/luxarust_system", "luxarust_graphics"]
 resolver = "3"
