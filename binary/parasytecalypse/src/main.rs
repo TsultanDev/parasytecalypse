@@ -1,6 +1,9 @@
-use luxarust::system::windows::{
-    Handle, HandleLoadFlags, HandleLoadInfo, Message, WindowClassRegisterInfo, WindowCreateFlags,
-    WindowCreateInfo,
+use luxarust::{
+    graphics::vulkan::{DefineVersion, Loader, LoaderLoadInfo},
+    system::windows::{
+        Handle, HandleLoadFlags, HandleLoadInfo, Message, WindowClassRegisterInfo,
+        WindowCreateFlags, WindowCreateInfo,
+    },
 };
 
 fn main() {
@@ -21,8 +24,16 @@ fn main() {
         .set_flags(WindowCreateFlags::OVERLAPPEDWINDOW)
         .set_class(&window_class);
     let window = handle.create_window(&window_info).expect("Failed window");
+
+    let loader_info = LoaderLoadInfo::default()
+        .set_application_name("Parasytecalypse")
+        .set_version(DefineVersion::Version(0, 1, 0));
+    let loader = Loader::load(&loader_info).expect("Failed loader");
+
     let mut message = Message::new();
-    message.message_blocking();
+    message.message_non_blocking(|| {});
+
+    loader.terminate();
 
     println!("Hello, world!");
 }

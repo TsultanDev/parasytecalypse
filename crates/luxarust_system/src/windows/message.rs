@@ -12,7 +12,7 @@ impl Message {
     pub fn message_blocking(&mut self) {
         unsafe {
             while GetMessageW(&mut self.0, None, 0, 0).into() {
-                TranslateMessage(&self.0);
+                _ = TranslateMessage(&self.0);
                 DispatchMessageW(&self.0);
             }
         }
