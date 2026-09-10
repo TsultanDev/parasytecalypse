@@ -20,6 +20,10 @@ dependencies = [
 [[package]]
 name = "luxarust_window"
 version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "windows",
+]
 
 [[package]]
 name = "parasytecalypse"
