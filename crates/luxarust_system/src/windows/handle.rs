@@ -18,6 +18,7 @@ use crate::windows::{
     Window, WindowClass, WindowClassRegisterInfo, WindowCreateInfo, WindowException, wnd_proc,
 };
 
+#[non_exhaustive]
 #[derive(Debug)]
 pub enum Exception {
     FailedToGetModule,
@@ -50,7 +51,7 @@ impl LoadInfo {
     }
 }
 
-pub struct Handle(HINSTANCE);
+pub struct Handle(pub(super) HINSTANCE);
 
 impl Handle {
     pub fn load(load_info: &LoadInfo) -> Result<Handle, Exception> {

@@ -12,6 +12,7 @@ use windows::Win32::{
     },
 };
 
+#[non_exhaustive]
 #[derive(Debug)]
 pub enum Exception {
     LoadCursorFailed,
@@ -133,8 +134,6 @@ pub unsafe extern "system" fn wnd_proc(
     unsafe {
         match msg {
             WM_DESTROY => {
-                // Jika ini Return Err, .unwrap() memicu panic -> crash 0xc000041d
-
                 PostQuitMessage(0);
                 LRESULT(0)
             }
@@ -143,5 +142,4 @@ pub unsafe extern "system" fn wnd_proc(
     }
 }
 
-pub struct Window(pub HWND);
-impl Window {}
+pub struct Window(pub(super) HWND);

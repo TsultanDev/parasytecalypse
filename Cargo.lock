@@ -49,6 +49,7 @@ version = "0.1.0"
 dependencies = [
  "ash",
  "bitflags",
+ "luxarust_system",
 ]
 
 [[package]]

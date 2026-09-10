@@ -1,5 +1,5 @@
 use luxarust::{
-    graphics::vulkan::{DefineVersion, Loader, LoaderLoadInfo},
+    graphics::vulkan::{DefineVersion, GraphicsSurfaceCreateInfo, Loader, LoaderLoadInfo},
     system::windows::{
         Handle, HandleLoadFlags, HandleLoadInfo, Message, WindowClassRegisterInfo,
         WindowCreateFlags, WindowCreateInfo,
@@ -29,10 +29,15 @@ fn main() {
         .set_application_name("Parasytecalypse")
         .set_version(DefineVersion::Version(0, 1, 0));
     let loader = Loader::load(&loader_info).expect("Failed loader");
+    let surface_info = GraphicsSurfaceCreateInfo::default()
+        .set_handle(&handle)
+        .set_window(&window);
+    let surface = loader.create_window_surface(&surface_info).unwrap();
 
     let mut message = Message::new();
     message.message_non_blocking(|| {});
 
+    loader.destroy_surface(surface);
     loader.terminate();
 
     println!("Hello, world!");

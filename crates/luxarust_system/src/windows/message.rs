@@ -29,7 +29,7 @@ impl Message {
                         return;
                     }
 
-                    TranslateMessage(&self.0);
+                    _ = TranslateMessage(&self.0);
                     DispatchMessageW(&self.0);
                 }
 

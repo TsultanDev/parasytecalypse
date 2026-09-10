@@ -5,43 +5,22 @@ use ash::{
     vk::{ApplicationInfo, InstanceCreateInfo},
 };
 
+use crate::vulkan::{GraphicsSurface, GraphicsSurfaceCreateInfo};
+
 #[derive(Debug)]
 pub enum Exception {
     LoadFailed,
     CreateInstanceFailed,
+    CreateMessengerFailed,
+    CreateGraphicsSurfaceFailed,
 }
 
 bitflags::bitflags! {
     #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
     pub struct LoadFlags: u32{
         const NONE = 0x00000000;
+        const ACTIVATE_MESSENGER = 0x00000001;
     }
-}
-
-bitflags::bitflags! {
-    #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
-    pub struct MessengerTypeFlags: u32{
-        const NONE = 0x00000000;
-        const DEVICE_ADRESS_BINDING = ash::vk::DebugUtilsMessageTypeFlagsEXT::DEVICE_ADDRESS_BINDING.as_raw();
-        const GENERAL = ash::vk::DebugUtilsMessageTypeFlagsEXT::GENERAL.as_raw();
-        const PERFORMANCE = ash::vk::DebugUtilsMessageTypeFlagsEXT::PERFORMANCE.as_raw();
-        const VALIDATION = ash::vk::DebugUtilsMessageTypeFlagsEXT::VALIDATION.as_raw();
-    }
-}
-
-bitflags::bitflags! {
-    #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
-    pub struct MessengerSeverityFlags: u32{
-        const NONE = 0x00000000;
-        const DEVICE_ADRESS_BINDING = ash::vk::DebugUtilsMessageTypeFlagsEXT::DEVICE_ADDRESS_BINDING.as_raw();
-        const GENERAL = ash::vk::DebugUtilsMessageTypeFlagsEXT::GENERAL.as_raw();
-        const PERFORMANCE = ash::vk::DebugUtilsMessageTypeFlagsEXT::PERFORMANCE.as_raw();
-        const VALIDATION = ash::vk::DebugUtilsMessageTypeFlagsEXT::VALIDATION.as_raw();
-    }
-}
-
-pub enum Extension {
-    MessengerCreateInfo { types: MessengerTypeFlags },
 }
 
 pub enum Version {
@@ -58,6 +37,7 @@ impl Default for Version {
 pub struct LoadInfo {
     pub application_name: &'static str,
     pub version: Version,
+    pub extensions: Vec<&'static str>,
 }
 impl LoadInfo {
     pub fn set_application_name(mut self, appplication_name: &'static str) -> Self {
@@ -66,6 +46,10 @@ impl LoadInfo {
     }
     pub fn set_version(mut self, version: Version) -> Self {
         self.version = version;
+        self
+    }
+    pub fn set_extensions(mut self, extensions: Vec<&'static str>) -> Self {
+        self.extensions = extensions;
         self
     }
 }
@@ -96,7 +80,14 @@ impl Loader {
                 .application_version(app_version)
                 .api_version(ash::vk::API_VERSION_1_1);
 
-            let instance_info = InstanceCreateInfo::default().application_info(&application_info);
+            let default_extensions = [
+                ash::vk::KHR_SURFACE_NAME.as_ptr(),
+                ash::vk::KHR_WIN32_SURFACE_NAME.as_ptr(),
+            ];
+
+            let instance_info = InstanceCreateInfo::default()
+                .application_info(&application_info)
+                .enabled_extension_names(&default_extensions);
 
             let instance = entry.create_instance(&instance_info, None);
             let instance = match instance {
@@ -112,8 +103,40 @@ impl Loader {
             self.1.destroy_instance(None);
         }
     }
+
+    #[cfg(target_os = "windows")]
+    pub fn create_window_surface(
+        &self,
+        create_info: &GraphicsSurfaceCreateInfo,
+    ) -> Result<GraphicsSurface, Exception> {
+        unsafe {
+            let handle = match create_info.handle {
+                Some(h) => h,
+                None => return Err(Exception::CreateGraphicsSurfaceFailed),
+            };
+            let window = match create_info.window {
+                Some(w) => w,
+                None => return Err(Exception::CreateGraphicsSurfaceFailed),
+            };
+            use luxarust_system::windows::bind_to_graphics_surface;
+
+            let surface_loader = ash::khr::win32_surface::Instance::new(&self.0, &self.1);
+            let (hinstance, hwnd) = bind_to_graphics_surface(handle, window);
+            let surface_info = ash::vk::Win32SurfaceCreateInfoKHR::default()
+                .hinstance(hinstance.0 as isize)
+                .hwnd(hwnd.0 as isize);
+            let surface = surface_loader.create_win32_surface(&surface_info, None);
+            let surface = match surface {
+                Ok(s) => s,
+                Err(_) => return Err(Exception::CreateGraphicsSurfaceFailed),
+            };
+            Ok(GraphicsSurface(surface))
+        }
+    }
+    pub fn destroy_surface(&self, surface: GraphicsSurface) {
+        unsafe {
+            let surface_loader = ash::khr::surface::Instance::new(&self.0, &self.1);
+            surface_loader.destroy_surface(surface.0, None);
+        }
+    }
 }
-struct Messenger(
-    Option<ash::ext::debug_utils::Instance>,
-    ash::vk::DebugUtilsMessengerEXT,
-);
