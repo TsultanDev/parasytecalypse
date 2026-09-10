@@ -1,0 +1,4 @@
+
+[workspace]
+members = ["binary/parasytecalypse","crates/luxarust", "crates/luxarust_window"]
+resolver = "3"
